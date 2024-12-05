@@ -1,10 +1,12 @@
 #!/bin/bash
 
+set -e
+
 check() {
     productPage="$1"
     expectedPrice="$2"
 
-    curl "$1" -s \
+    curl "$productPage" -s \
         -X 'GET' \
         -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
         -H 'Sec-Fetch-Site: same-origin' \
@@ -16,15 +18,18 @@ check() {
         -H 'Connection: keep-alive' > product.html
 
     priceTotal=$(cat "product.html" | grep "priceTotal:" | grep -oE "[0-9]+\.[0-9]+")
-    priceMin=$(cat "product.html" | grep "priceMin :" | grep -oE "[0-9]+\.[0-9]+")
-    priceMax=$(cat "product.html" | grep "priceMax :" | grep -oE "[0-9]+\.[0-9]+")
+    priceMin=$(cat "product.html" | grep "priceMin :" | grep -oE "[0-9]+\.[0-9]+" || echo "$priceTotal") # can be 'na'
+
+    echo "Checking $productPage"
+    echo "Expected Price: $expectedPrice, Current Price: $priceTotal, Min Price: $priceMin"
 
     # Negate bc result since it returns 1 if the condition is true, but if needs 0
     if [ ! $(echo "$priceMin < $expectedPrice" | bc) ] || [ ! $(echo "$priceTotal < $expectedPrice" | bc) ]; then
-        echo "Product on sale!  Original price: $expectedPrice, Total price: $priceTotal, Min Price: $priceMin"
-        echo "Visit $productPage"
+        echo "Product on sale!"
         exit -1
     fi
+
+    echo ""
 }
 
 check "https://www.costco.com/intense-951-gravel-bike-1x-sram.product.4000230137.html" "2499.99"

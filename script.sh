@@ -25,7 +25,7 @@ check() {
 
     # Negate bc result since it returns 1 if the condition is true, but if needs 0
     if [ ! $(echo "$priceMin < $expectedPrice" | bc) ] || [ ! $(echo "$priceTotal < $expectedPrice" | bc) ]; then
-        echo "Product on sale!"
+        echo "::error::Product on sale!"
         exit -1
     fi
 

@@ -6,7 +6,7 @@ check() {
     productPage="$1"
     expectedPrice="$2"
 
-    curl "$productPage" -s -X 'GET' \
+    curl "$productPage" -s -S -X 'GET' \
         -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15' \
         > product.html
 

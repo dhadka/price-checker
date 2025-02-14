@@ -6,8 +6,14 @@ check() {
     productPage="$1"
     expectedPrice="$2"
 
-    curl "$productPage" -s -S -X 'GET' \
-        -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15' \
+    curl "$productPage" -v -s -S -X 'GET' \
+        -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15' \
+        -H 'Referer: https://www.costco.com/bicycles.html' \
+        -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+        -H 'Accept-Language: en-US,en;q=0.9' \
+        -H 'Sec-Fetch-Dest: document' \
+        -H 'Sec-Fetch-Mode: navigate' \
+        -H 'Sec-Fetch-Site: same-origin' \
         > product.html
 
     priceTotal=$(cat "product.html" | grep "priceTotal:" | grep -oE "[0-9]+\.[0-9]+")
@@ -16,7 +22,6 @@ check() {
     echo "Checking $productPage"
     echo "Expected Price: $expectedPrice, Current Price: $priceTotal, Min Price: $priceMin"
     
-
     # If price different, fail the action so it sends a notification
     if [ $(echo "$priceMin < $expectedPrice" | bc) -ne "0" ] || [ $(echo "$priceTotal < $expectedPrice" | bc) -ne "0" ]; then
         echo "::error::Product on sale!"
